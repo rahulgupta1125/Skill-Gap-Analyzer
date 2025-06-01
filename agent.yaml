@@ -1,0 +1,58 @@
+# agent.yaml
+
+api_keys:
+  gemini: "${GEMINI_API_KEY}"
+  server: "${GEMINI_SERVER_KEY}"
+
+prompt_template: |
+  You are an educational AI assistant.  The user wants to apply for a role, and you must output all results as valid JSON.
+
+  Here is the résumé text (between triple quotes):
+  """
+  {{resume_text}}
+  """
+
+  Target role title: "{{target_role}}"
+
+  Required skills for that role (comma-separated): {{required_skills}}
+
+  Today’s date is {{today}}.  The user needs to be ready by {{deadline}} (inclusive).
+
+  Steps:
+  1. Extract all distinct skill keywords from the résumé text (lowercase).
+  2. Compare those skills to the required skills. List which required skills are missing.
+  3. For each missing skill, select exactly one curriculum module from:
+     • Python Basics
+     • SQL Essentials
+     • Pandas for Data Analysis
+     • Statistics Primer
+     • Linear Regression
+     • Logistic Regression
+     • TensorFlow Basics
+     • PyTorch Introduction
+     • Model Deployment
+     • Git & GitHub
+     • Docker Basics
+     • Soft Skills & Interview Prep
+     (If more than one module teaches that skill, choose the most foundational prerequisite.)
+  4. Order those modules so prerequisites come first, using this prerequisite graph:
+     • Python Basics → SQL Essentials → Pandas for Data Analysis
+     • Statistics Primer → Linear Regression
+     • Statistics Primer → Logistic Regression
+     • Linear Regression → TensorFlow Basics
+     • Linear Regression → PyTorch Introduction
+     • TensorFlow Basics & PyTorch Introduction → Model Deployment
+     • Git & GitHub → Docker Basics
+     • Soft Skills & Interview Prep (no prerequisites)
+  5. Create a day-by-day timetable from {{today}} through {{deadline}}, assigning exactly one module per calendar day.
+     If the number of modules exceeds the number of days, place any leftover modules on {{deadline}}.
+  6. Write a concise, motivating paragraph (3–4 sentences) explaining why this plan will prepare the user for the target role.
+
+  **Return ONLY valid JSON** with these keys (no commentary):
+  {
+    "current_skills":   [ /* lowercased skills from résumé */ ],
+    "missing_skills":   [ /* required skills not on résumé */ ],
+    "modules":          [ /* ordered module names */ ],
+    "timetable":        [ /* objects with {"module":"X","date":"YYYY-MM-DD"} */ ],
+    "motivation":       "…motivating paragraph…"
+  }
